@@ -11,10 +11,16 @@
 // (like array objects do in Java), we generally have to pass in a
 // length parameter to functions which use pointers to reference
 // arrays.
-int
-array_sum(int *arr, int n)
+int array_sum(int *arr, int n)
 {
 	// TODO: Your code here.
-	assert(0);
-	return -1;
+	int sum = 0;
+	int i;
+	for(i = 0; i < n; i++)
+	{
+		sum = sum + *arr;
+		arr++;
+	}
+		
+	return sum;
 }
