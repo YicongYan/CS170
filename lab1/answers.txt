@@ -14,5 +14,19 @@ Other acknowledgments:
 
 Responses to exercises (if any) that need to go into answers.txt:
 
+Exercise 5:
+
+No, if run(current) is replaced by schedule() in INT_SYS_GETPID, sys_getpid() is not guaranteed to return the correct value. The reason is that  run(current) is to reload 
+all the relevant registers of the process that is pointed to by "current" including %eax, so the pid would be in %eax. However, schedule() picks a runnable process, 
+then reload all the relevant registers of the process, it's not guranteed that schedule() picks the same process we want, so it's very likely that schedule() will load the 
+worong value into %eax.
+
+Exercise 7:
+
+So in the process descriptor in kernel.h,  I add a p_waiting[16] as a waiting queue, and in start() I initialize it to be -1 for every element. Then in INT_SYS_WAIT,
+when a process is called but has not yet exited. Then, it should set the current process to be P_BLOCKED, and then put current process;s pid into the waiting queue
+of the process it wants to wait for. Then in INT_SYS_EXIT, before schdule(), the current process will check whether there is any process it needs to wake before
+it exits using a for loop, if there is one, return the current process exit status to the blocked process's eax and set it back to P_RUNNABLE.
+
 
 Anything else you'd like us to know:

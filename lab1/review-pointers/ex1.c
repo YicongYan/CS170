@@ -4,6 +4,7 @@
 // This should only take one line of code!
 void
 set_to_five(int *ptr)
-{
+{	
+	//use pointer to assign value
 	*ptr = 5;
 }

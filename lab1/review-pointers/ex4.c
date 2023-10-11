@@ -29,7 +29,9 @@ point_dist(struct point *pt1, struct point *pt2)
 {
 	// TODO: Your code here.
 	double sum, dis;
+	//this is just the formula
 	sum = (pt1->x - pt2->x) * (pt1->x - pt2->x) + (pt1->y - pt2->y) * (pt1->y - pt2->y);
+	//use the sqrt function in math.h to calculate
 	dis = sqrt(sum);
 	return dis;
 }

@@ -14,8 +14,13 @@ swap(int *p1, int *p2)
 
 	// TODO: Your code here.
 	int temp;
+	//temp to hold the value store in the address of p1
 	temp = *p1;
+
+	//p1 = p2
 	*p1 = *p2;
+
+	//p2 = temp
 	*p2 = temp;
 	
 }

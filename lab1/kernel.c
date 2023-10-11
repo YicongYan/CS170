@@ -175,10 +175,16 @@ interrupt(registers_t *reg)
 		current->p_exit_status = current->p_registers.reg_eax;
 		int i;
 		for(i = 0; i < 16; i++){
+			//check if there's a process waiting for a response
 			if(current->p_waiting[i] != -1){
+				//if it's waiting for a response, get its pid
 				pid_t pid = current->p_waiting[i];
+
+				//double check that the process is P_BLOCKED
 				if(proc_array[pid].p_state == P_BLOCKED){
+					//return the exit status to its eax
 					proc_array[pid].p_registers.reg_eax = current->p_exit_status;
+					//change it back to runnable
 					proc_array[pid].p_state = P_RUNNABLE;
 				}
 			}
@@ -202,13 +208,17 @@ interrupt(registers_t *reg)
 			current->p_registers.reg_eax = -1;
 		else if (proc_array[p].p_state == P_ZOMBIE){
 			current->p_registers.reg_eax = proc_array[p].p_exit_status;
+			//free any zombie process
 			proc_array[p].p_state = P_EMPTY;
 		}
 		else{
+			//set current process to be P_BLOCKED
 			current->p_state = P_BLOCKED;
 			int i;
 			for(i = 0; i < 16; i++){
+				//find a empty space to put it in the queue of the process you want to wait
 				if(proc_array[p].p_waiting[i] == -1){
+					//put the current pid into the waiting queue
 					proc_array[p].p_waiting[i] = current->p_pid;
 					break;
 				}
@@ -274,13 +284,20 @@ do_fork(process_t *parent)
 	//                What should sys_fork() return to the child process?)
 	// You need to set one other process descriptor field as well.
 	// Finally, return the child's process ID to the parent.
-
-	copy_stack(&proc_array[i], parent);
-
+	
+	//set the process to be runnable in the process list
 	proc_array[i].p_state = P_RUNNABLE; 
+
+	//give it the correct pid
 	proc_array[i].p_pid = i;
+
+	//copy the registers from its parent
 	proc_array[i].p_registers = parent->p_registers;
+
+	//copy the stack of its parent
 	copy_stack(&proc_array[i], parent);
+
+	//return pid=0 to its own eax
 	proc_array[i].p_registers.reg_eax = 0;
 
 	return i;
@@ -341,11 +358,19 @@ copy_stack(process_t *dest, process_t *src)
 
 	// YOUR CODE HERE!
 
+	//Based on the picture calculating its stack top
 	src_stack_top = src->p_pid*PROC_STACK_SIZE + PROC1_STACK_ADDR;
+
+	//calculate the stack bottom
 	src_stack_bottom = src->p_registers.reg_esp;
+
+	//do the same thing for the destination address
 	dest_stack_top = dest->p_pid*PROC_STACK_SIZE + PROC1_STACK_ADDR;
 	dest_stack_bottom = dest_stack_top - (src_stack_top - src_stack_bottom);
+
 	// YOUR CODE HERE: memcpy the stack and set dest->p_registers.reg_esp
+	
+	//use memcpy to copy the stack to the new position
 	memcpy((void*)dest_stack_bottom, (void*)src_stack_bottom, (src_stack_top - src_stack_bottom));
 	dest->p_registers.reg_esp = dest_stack_bottom;
 }
