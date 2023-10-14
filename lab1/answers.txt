@@ -28,5 +28,13 @@ when a process is called but has not yet exited. Then, it should set the current
 of the process it wants to wait for. Then in INT_SYS_EXIT, before schdule(), the current process will check whether there is any process it needs to wake before
 it exits using a for loop, if there is one, return the current process exit status to the blocked process's eax and set it back to P_RUNNABLE.
 
+Exercise 10:
+The base version outputs:
+A
+2
+C
+
+Exercise 11:
+
 
 Anything else you'd like us to know:
