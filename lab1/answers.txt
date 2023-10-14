@@ -36,5 +36,9 @@ C
 
 Exercise 11:
 
+This is the information of my commit:
+Merge: c58353a a801181
+Author: YicongYan <yicongyan@ucsb.edu>
+
 
 Anything else you'd like us to know:
