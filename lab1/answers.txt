@@ -42,3 +42,5 @@ Author: YicongYan <yicongyan@ucsb.edu>
 
 
 Anything else you'd like us to know:
+If you didn't see the file you want, please check my gihub: https://github.com/YicongYan/CS170    
+I've put everything of this lab on it.
