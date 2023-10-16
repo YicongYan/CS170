@@ -186,6 +186,7 @@ interrupt(registers_t *reg)
 					proc_array[pid].p_registers.reg_eax = current->p_exit_status;
 					//change it back to runnable
 					proc_array[pid].p_state = P_RUNNABLE;
+					current->p_waiting[i] = -1;
 				}
 			}
 			
