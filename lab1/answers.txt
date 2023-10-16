@@ -16,10 +16,10 @@ Responses to exercises (if any) that need to go into answers.txt:
 
 Exercise 5:
 
-No, if run(current) is replaced by schedule() in INT_SYS_GETPID, sys_getpid() is not guaranteed to return the correct value. The reason is that  run(current) is to reload 
-all the relevant registers of the process that is pointed to by "current" including %eax, so the pid would be in %eax. However, schedule() picks a runnable process, 
-then reload all the relevant registers of the process, it's not guranteed that schedule() picks the same process we want, so it's very likely that schedule() will load the 
-worong value into %eax.
+No, if run(current) is replaced by schedule() in INT_SYS_GETPID, sys_getpid() is not guaranteed to return the correct value. The reason is that run(current) is to reload 
+all the relevant registers of the process that is pointed to by the pointer "current", so the pid of the current process would be in %eax. 
+However, schedule() picks a runnable process, then reloads all the relevant registers of that process, it's not guaranteed that schedule() picks the correct process, it might
+pick a process that we don't call sys_getpid() on and reload the registers using its information, so it's very likely that schedule() will load the wrong value into %eax.
 
 Exercise 7:
 
