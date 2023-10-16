@@ -19,6 +19,7 @@ int array_sum(int *arr, int n)
 	// for loop to add every element
 	for(i = 0; i < n; i++)
 	{	
+
 		//add one element
 		sum = sum + *arr;
 		//pointer increment

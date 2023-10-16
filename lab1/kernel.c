@@ -267,7 +267,7 @@ do_fork(process_t *parent)
 			break;
 	}
 	
-	if(i > NPROCS) 
+	if(i >= NPROCS) 
 		return -1;
 
 	// Then, initialize that process descriptor as a running process
