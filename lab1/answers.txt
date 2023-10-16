@@ -30,6 +30,9 @@ it exits using a for loop, if there is one, return the current process exit stat
 
 Exercise 9:
 
+commit bfee1c14c595ee355b52a78af7e70ffb2a52c04a
+Author: Jason Wolfe <jason23@cs.utexas.edu>
+Date:   Wed Jan 18 20:25:38 2012 -0600
 
 Exercise 10:
 The base version outputs:
