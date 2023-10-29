@@ -1,10 +1,10 @@
-Name:
-PERM #: 
+Name: Yicong Yan	
+PERM #: 8087736
 
-Collaborators (who you talked to about the lab, what you talked about):
+Collaborators (who you talked to about the lab, what you talked about): TA
 
 
-Source material that you consulted:
+Source material that you consulted: linux man page, google, chatgpt,
 
 
 Other acknowledgments:

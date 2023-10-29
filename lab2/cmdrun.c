@@ -103,9 +103,9 @@
 static pid_t
 cmd_exec(command_t *cmd, int *pass_pipefd)
 {
-  (void)pass_pipefd;      // get rid of unused warning
 	pid_t pid = -1;		// process ID for child
 	int pipefd[2];		// file descriptors for this process's pipe
+  
 
 	/* EXERCISE: Complete this function!
 	 * We've written some of the skeleton for you, but feel free to
@@ -115,10 +115,12 @@ cmd_exec(command_t *cmd, int *pass_pipefd)
 	// Create a pipe, if this command is the left-hand side of a pipe.
 	// Return -1 if the pipe fails.
 	if (cmd->controlop == CMD_PIPE) {
-		/* Your code here*/
+		/* Your code here. */
+	if (pipe(pipefd) == -1)
+		return -1;
 	}
-
-
+    		
+	
 	// Fork the child and execute the command in that child.
 	// You will handle all redirections by manipulating file descriptors.
 	//
@@ -212,17 +214,111 @@ cmd_exec(command_t *cmd, int *pass_pipefd)
 	//    Explain what that race condition is, and fix it.
 	//    Hint: Investigate fchdir().
 	/* Your code here */
+	pid = fork();
+	 if (pid == -1) {
+	        return -1; //error
+    	}
+
+	if (pid == 0) { //child
+		int fd;
+		dup2(*pass_pipefd, STDIN_FILENO); //initialize to stdin
+        
+        	
+		//if we need to redirect something to a file
+        	if (cmd->redirect_filename[0]) {
+			fd = open(cmd->redirect_filename[0], O_RDONLY);
+			dup2(fd, STDIN_FILENO);
+			close(fd);
+		}
+		
+		//if it's pipe, let stdout be the output of pipe
+       		if (cmd->controlop == CMD_PIPE) {
+            		dup2(pipefd[1], STDOUT_FILENO);
+			close(pipefd[0]);
+        	} 
+		//else read from stdin and if there's a redirection, redirect to that file
+		else if (cmd->controlop != CMD_PIPE && cmd->redirect_filename[1] != NULL) {
+            		*pass_pipefd = STDIN_FILENO;
+			fd = open(cmd->redirect_filename[1], O_TRUNC|O_CREAT|O_WRONLY, 0666);
+			dup2(fd, STDOUT_FILENO);	
+			close(fd);	
+		}
+		 //if nothing needs to do, read from stdin and write to stdout
+	        else {
+	            *pass_pipefd = STDIN_FILENO;
+	            dup2(STDOUT_FILENO, 1);
+        	}
+		
+		if (cmd->redirect_filename[2]) { //redirect to stderror
+			fd = open(cmd->redirect_filename[2], O_CREAT|O_WRONLY, 0666);
+			dup2(fd, STDERR_FILENO);
+			close(fd);
+		}
+		
+		if (cmd->subshell) { //if there's subshell
+			exit(cmd_line_exec(cmd->subshell)); //execute using the subshell and get its status
+		} 
+		
+		else if (strcmp(cmd->argv[0], "cd") == 0) {
+			if (cmd->argv[1]) {
+				int fd = open(cmd->argv[1], O_RDONLY); //open the file to see whether that exists
+				if (fd != -1){//check whether there's a file with the name
+					close(fd);
+				}
+				else {
+					//perror("cd"); // this is wrong for some reason, and I'm not sure hwo to check the number of arugments
+					exit(EXIT_FAILURE);
+				}
+				exit(EXIT_SUCCESS);
+			}
+        	} 
+		
+		else if (cmd->argv[0]){ //execute the command if it has one
+			execvp(cmd->argv[0], cmd->argv);
+		}
+		
+		else{
+			exit(EXIT_SUCCESS); //no comand to execute
+		}
+
+	} 
+    	else { //parent
+        if (cmd->argv[0]) {
+			if (strcmp(cmd->argv[0], "cd") == 0) {
+					chdir(cmd->argv[1] ? cmd->argv[1] : getenv("HOME")); //the getenv("HOME") is to handle pwd
+					//exit(EXIT_SUCCESS);
+			} 
+			else if (strcmp(cmd->argv[0], "exit") == 0) {
+				exit(EXIT_SUCCESS);
+			} 
+	}
+        
+        if (*pass_pipefd != STDIN_FILENO) {
+            close(*pass_pipefd);
+		//close(pipefd[1]);
+	}
+        if (cmd->controlop == CMD_PIPE) {
+            *pass_pipefd = pipefd[0];
+	     close(pipefd[1]);
+        } 
+	else
+            *pass_pipefd = STDIN_FILENO;
+        
+		
+
+}
+
 
 	// return the child process ID
 	return pid;
 }
 
 
-/* cmd_line_exec(cmdlist)
+/* command_line_exec(cmdlist)
  *
  *   Execute the command list.
  *
- *   Execute each individual command with 'cmd_exec'.
+ *   Execute each individual command with 'command_exec'.
  *   String commands together depending on the 'cmdlist->controlop' operators.
  *   Returns the exit status of the entire command list, which equals the
  *   exit status of the last completed command.
@@ -241,7 +337,7 @@ cmd_exec(command_t *cmd, int *pass_pipefd)
  *      CMD_BACKGROUND, CMD_PIPE
  *                        Do not wait for this command to exit.  Pretend it
  *                        had status 0, for the purpose of returning a value
- *                        from cmd_line_exec.
+ *                        from command_line_exec.
  */
 int
 cmd_line_exec(command_t *cmdlist)
@@ -250,21 +346,58 @@ cmd_line_exec(command_t *cmdlist)
 	int pipefd = STDIN_FILENO;  // read end of last pipe
 
 	while (cmdlist) {
-		int wp_status;	    // Use for waitpid's status argument!
+		int wp_status;	    // Hint: use for waitpid's status argument!
 				    // Read the manual page for waitpid() to
 				    // see how to get the command's exit
 				    // status (cmd_status) from this value.
 
 		// EXERCISE: Fill out this function!
-		// If an error occurs in cmd_exec, feel free to abort().
-
-		/* Your code here */
-
-		cmdlist = cmdlist->next;
-	}
-
-  while (waitpid(0, 0, WNOHANG) > 0);
+		// If an error occurs in command_exec, feel free to abort().
+       
+           
+        
+     
+            pid_t id = cmd_exec(cmdlist, &pipefd);
+            if (id <= 0)
+                abort();
+            
+            switch(cmdlist->controlop)
+            {
+                case CMD_END:
+                case CMD_SEMICOLON:
+                    if (cmdlist->argv[0] == NULL || 
+                        strcmp(cmdlist->argv[0], "q") != 0) {
+                        waitpid(id, &wp_status, 0);
+                        cmd_status = WEXITSTATUS(wp_status);
+                    }
+                    break;
+                case CMD_AND:
+                    waitpid(id, &wp_status, 0);
+                    if (WEXITSTATUS(wp_status) != 0) {
+                        cmd_status = WEXITSTATUS(wp_status);
+                        goto done;
+                    }
+                    break;
+                case CMD_OR:
+                    waitpid(id, &wp_status, 0);
+                    if (WEXITSTATUS(wp_status) == 0) {
+                        cmd_status = 0; // EXIT_SUCCESS
+                        goto done;
+                    }
+                    break;
+                case CMD_BACKGROUND:
+                case CMD_PIPE:
+                    cmd_status = 0;
+                    break;
+            }
+	    cmdlist = cmdlist->next;
+        }
+	
+	
 
 done:
 	return cmd_status;
+    
+error:
+    return 1;
 }

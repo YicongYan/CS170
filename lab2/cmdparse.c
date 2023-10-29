@@ -217,6 +217,20 @@ cmd_free(command_t *cmd)
 		return;
 
 	/* Your code here. */
+	
+	for (i = 0; i < 3; i++)
+		if (cmd->redirect_filename[i] != NULL)
+			free(cmd->redirect_filename[i]);
+	
+	for (i = 0; cmd->argv[i] == NULL ;i++)
+		free(cmd->argv[i]);
+	
+	cmd_free(cmd->subshell);
+	cmd_free(cmd->next);
+	
+	free(cmd);
+	
+	
 }
 
 
@@ -241,7 +255,9 @@ cmd_parse(parsestate_t *parsestate)
 	command_t *cmd = cmd_alloc();
 	if (!cmd)
 		return NULL;
-
+	
+	tokentype_t last = TOK_END;
+	int counter = 0;
 	while (1) {
 
 		// Read the next token from 'parsestate'.
@@ -279,7 +295,7 @@ cmd_parse(parsestate_t *parsestate)
 			cmd->redirect_filename[fd] = strdup(token.buffer);
 			break;
 		}
-		case TOK_OPEN_PAREN:
+		
 
              // EXERCISE: Handle parentheses.
              // NOTE the following:
@@ -310,18 +326,31 @@ cmd_parse(parsestate_t *parsestate)
              //     have been given fit together. (It may be helpful to
              //     look over cmdparse.h again.)
             /* Your code here. */
+	       case TOK_OPEN_PAREN:
+			if (last!= TOK_NORMAL)
+				cmd->subshell = cmd_line_parse(parsestate,1);
+			else 
+				goto error;
 			break;
+		
+		case TOK_END:
+			goto done;
+
+		case TOK_ERROR:
+			goto error;
+		case TOK_CLOSE_PAREN:
 		default:
 			parse_ungettoken(parsestate);
 			goto done;
 		}
+		last = token.type;
 	}
 
  done:
 	// NULL-terminate the argv list
 	cmd->argv[i] = 0;
 
-	if (i == 0) {
+	if (i == 0 && cmd->subshell == NULL) {
 		/* Empty command */
 		cmd_free(cmd);
 		return NULL;
