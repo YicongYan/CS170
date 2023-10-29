@@ -248,60 +248,52 @@ cmd_exec(command_t *cmd, int *pass_pipefd)
 	            *pass_pipefd = STDIN_FILENO;
 	            dup2(STDOUT_FILENO, 1);
         	}
-		
-		if (cmd->redirect_filename[2]) { //redirect to stderror
+
+		if (cmd->redirect_filename[2]) {
 			fd = open(cmd->redirect_filename[2], O_CREAT|O_WRONLY, 0666);
 			dup2(fd, STDERR_FILENO);
 			close(fd);
 		}
 		
-		if (cmd->subshell) { //if there's subshell
-			exit(cmd_line_exec(cmd->subshell)); //execute using the subshell and get its status
+		if (cmd->subshell) {
+            	
+			int exit_status = cmd_line_exec(cmd->subshell);
+			exit(exit_status);
 		} 
-		
 		else if (strcmp(cmd->argv[0], "cd") == 0) {
 			if (cmd->argv[1]) {
-				int fd = open(cmd->argv[1], O_RDONLY); //open the file to see whether that exists
-				if (fd != -1){//check whether there's a file with the name
+				int fd = open(cmd->argv[1], O_RDONLY);
+				if (fd != -1){
 					close(fd);
+					if(cmd->argv[2])
+						fprintf(stderr, "cd: Syntax error! Wrong number of arguments!");
+					else
+					chdir(cmd->argv[1] ? cmd->argv[1] : getenv("HOME"));
 				}
 				else {
-					//perror("cd"); // this is wrong for some reason, and I'm not sure hwo to check the number of arugments
 					exit(EXIT_FAILURE);
 				}
 				exit(EXIT_SUCCESS);
 			}
         	} 
-		
-		else if (cmd->argv[0]){ //execute the command if it has one
-			execvp(cmd->argv[0], cmd->argv);
-		}
-		
-		else{
-			exit(EXIT_SUCCESS); //no comand to execute
+		else {
+			execvp(cmd->argv[0], &cmd->argv[0]);
 		}
 
 	} 
-    	else { //parent
+    	else { //father
         if (cmd->argv[0]) {
 			if (strcmp(cmd->argv[0], "cd") == 0) {
-					chdir(cmd->argv[1] ? cmd->argv[1] : getenv("HOME")); //the getenv("HOME") is to handle pwd
-					//exit(EXIT_SUCCESS);
-					if(cmd->argv[2]){	
-						fprintf(stderr, "cd: Syntax error! Wrong number of arguments!");
-					}
+				chdir(cmd->argv[1] ? cmd->argv[1] : getenv("HOME"));
 			} 
 			else if (strcmp(cmd->argv[0], "exit") == 0) {
 				exit(EXIT_SUCCESS);
-			} 
-			else if (strcmp(cmd->argv[0], "our_pwd") == 0) {
-				chdir(getenv("HOME"));
 			} 
 	}
         
         if (*pass_pipefd != STDIN_FILENO) {
             close(*pass_pipefd);
-		//close(pipefd[1]);
+			//close(pipefd[1]);
 	}
         if (cmd->controlop == CMD_PIPE) {
             *pass_pipefd = pipefd[0];
@@ -371,11 +363,9 @@ cmd_line_exec(command_t *cmdlist)
             {
                 case CMD_END:
                 case CMD_SEMICOLON:
-                    if (cmdlist->argv[0] == NULL || 
-                        strcmp(cmdlist->argv[0], "q") != 0) {
                         waitpid(id, &wp_status, 0);
                         cmd_status = WEXITSTATUS(wp_status);
-                    }
+                   
                     break;
                 case CMD_AND:
                     waitpid(id, &wp_status, 0);

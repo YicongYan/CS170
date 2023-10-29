@@ -227,6 +227,8 @@ cmd_free(command_t *cmd)
 	
 	cmd_free(cmd->subshell);
 	cmd_free(cmd->next);
+	cmd->subshell = NULL;
+    	cmd->next = NULL;
 	
 	free(cmd);
 	
@@ -327,7 +329,7 @@ cmd_parse(parsestate_t *parsestate)
              //     look over cmdparse.h again.)
             /* Your code here. */
 	       case TOK_OPEN_PAREN:
-			if (last!= TOK_NORMAL)
+			if (last!= TOK_NORMAL && cmd->subshell == NULL)
 				cmd->subshell = cmd_line_parse(parsestate,1);
 			else 
 				goto error;
