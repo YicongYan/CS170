@@ -287,9 +287,15 @@ cmd_exec(command_t *cmd, int *pass_pipefd)
 			if (strcmp(cmd->argv[0], "cd") == 0) {
 					chdir(cmd->argv[1] ? cmd->argv[1] : getenv("HOME")); //the getenv("HOME") is to handle pwd
 					//exit(EXIT_SUCCESS);
+					if(cmd->argv[2]){	
+						fprintf(stderr, "cd: Syntax error! Wrong number of arguments!");
+					}
 			} 
 			else if (strcmp(cmd->argv[0], "exit") == 0) {
 				exit(EXIT_SUCCESS);
+			} 
+			else if (strcmp(cmd->argv[0], "our_pwd") == 0) {
+				chdir(getenv("HOME"));
 			} 
 	}
         
