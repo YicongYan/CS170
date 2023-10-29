@@ -287,7 +287,8 @@ cmd_exec(command_t *cmd, int *pass_pipefd)
 				chdir(cmd->argv[1] ? cmd->argv[1] : getenv("HOME"));
 			} 
 			else if (strcmp(cmd->argv[0], "exit") == 0) {
-				exit(EXIT_SUCCESS);
+				if(!cmd->argv[2])
+					exit(EXIT_SUCCESS);
 			} 
 	}
         
@@ -365,7 +366,6 @@ cmd_line_exec(command_t *cmdlist)
                 case CMD_SEMICOLON:
                         waitpid(id, &wp_status, 0);
                         cmd_status = WEXITSTATUS(wp_status);
-                   
                     break;
                 case CMD_AND:
                     waitpid(id, &wp_status, 0);

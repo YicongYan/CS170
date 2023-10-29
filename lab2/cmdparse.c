@@ -218,12 +218,17 @@ cmd_free(command_t *cmd)
 
 	/* Your code here. */
 	
-	for (i = 0; i < 3; i++)
-		if (cmd->redirect_filename[i] != NULL)
+	for (i = 0; i < 3; i++){
+		if (cmd->redirect_filename[i] != NULL){
 			free(cmd->redirect_filename[i]);
+		}
+		cmd->redirect_filename[i] = NULL;
+	}
 	
-	for (i = 0; cmd->argv[i] == NULL ;i++)
+	for (i = 0; cmd->argv[i] == NULL ;i++){
 		free(cmd->argv[i]);
+		cmd->argv[i] = NULL;
+	}
 	
 	cmd_free(cmd->subshell);
 	cmd_free(cmd->next);
