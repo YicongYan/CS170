@@ -383,6 +383,7 @@ cmd_line_exec(command_t *cmdlist)
                     break;
                 case CMD_BACKGROUND:
                 case CMD_PIPE:
+		    
                     cmd_status = 0;
                     break;
             }
