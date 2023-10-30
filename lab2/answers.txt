@@ -1,7 +1,8 @@
 Name: Yicong Yan	
 PERM #: 8087736
 
-Collaborators (who you talked to about the lab, what you talked about): TA, talk about it with Aasish Sai Virjal.
+Collaborators (who you talked to about the lab, what you talked about): 
+Talk about it with the TA, Aasish Sai Virjal and Shuyi Wan. (and some other guys I forgot their names)
 
 
 Source material that you consulted: linux man page, google, chatgpt,
@@ -16,3 +17,6 @@ Responses to exercises (if any) that need to go into answers.txt:
 
 
 Anything else you'd like us to know:
+
+If the files does not work, please go to https://github.com/YicongYan/CS170/tree/lab2/lab2.
+I put all my files there.
