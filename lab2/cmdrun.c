@@ -231,6 +231,12 @@ cmd_exec(command_t *cmd, int *pass_pipefd)
 			close(fd);
 		}
 		
+		if (cmd->redirect_filename[2]) {
+			fd = open(cmd->redirect_filename[2], O_CREAT|O_WRONLY, 0666);
+			dup2(fd, STDERR_FILENO);
+			close(fd);
+		}
+		
 		//if it's pipe, let stdout be the output of pipe
        		if (cmd->controlop == CMD_PIPE) {
             		dup2(pipefd[1], STDOUT_FILENO);
@@ -249,16 +255,10 @@ cmd_exec(command_t *cmd, int *pass_pipefd)
 	            dup2(STDOUT_FILENO, 1);
         	}
 
-		if (cmd->redirect_filename[2]) {
-			fd = open(cmd->redirect_filename[2], O_CREAT|O_WRONLY, 0666);
-			dup2(fd, STDERR_FILENO);
-			close(fd);
-		}
 		
 		if (cmd->subshell) {
             	
-			int exit_status = cmd_line_exec(cmd->subshell);
-			exit(exit_status);
+			exit(cmd_line_exec(cmd->subshell));
 		} 
 		else if (strcmp(cmd->argv[0], "cd") == 0) {
 			if (cmd->argv[1]) {
@@ -267,34 +267,54 @@ cmd_exec(command_t *cmd, int *pass_pipefd)
 					close(fd);
 					if(cmd->argv[2])
 						fprintf(stderr, "cd: Syntax error! Wrong number of arguments!");
-					else
-					chdir(cmd->argv[1] ? cmd->argv[1] : getenv("HOME"));
+					else{
+						chdir(cmd->argv[1] ? cmd->argv[1] : getenv("HOME"));
+						exit(0);
+					}
 				}
 				else {
-					exit(EXIT_FAILURE);
+					exit(1);
 				}
-				exit(EXIT_SUCCESS);
+				exit(0);
 			}
         	} 
-		else {
-			execvp(cmd->argv[0], &cmd->argv[0]);
+		else if (strcmp(cmd->argv[0], "exit") == 0){
+			if(!cmd->argv[2])
+				exit(0);
 		}
+		else if(cmd->argv[0]){
+			exit(execvp(cmd->argv[0], &cmd->argv[0]));
+		}
+		else
+			exit(0);
 
 	} 
     	else { //father
+	int wp_status;
+	while (1) {
+        pid_t wpid = waitpid(-1, &wp_status, WNOHANG);
+	        if (wpid == -1) {
+	            perror("waitpid");
+	            exit(EXIT_FAILURE);
+	        }
+		 else if (wpid == 0) {
+	            break; // No more child processes
+	        }
+        // Do something with wp_status, such as logging or handling errors
+    	}
         if (cmd->argv[0]) {
 			if (strcmp(cmd->argv[0], "cd") == 0) {
 				chdir(cmd->argv[1] ? cmd->argv[1] : getenv("HOME"));
 			} 
 			else if (strcmp(cmd->argv[0], "exit") == 0) {
 				if(!cmd->argv[2])
-					exit(EXIT_SUCCESS);
+					exit(0);
 			} 
 	}
         
         if (*pass_pipefd != STDIN_FILENO) {
             close(*pass_pipefd);
-			//close(pipefd[1]);
+	    //close(pipefd[1]);
 	}
         if (cmd->controlop == CMD_PIPE) {
             *pass_pipefd = pipefd[0];
@@ -352,11 +372,10 @@ cmd_line_exec(command_t *cmdlist)
 
 		// EXERCISE: Fill out this function!
 		// If an error occurs in command_exec, feel free to abort().
-       
-           
-        
+  
      
             pid_t id = cmd_exec(cmdlist, &pipefd);
+
             if (id <= 0)
                 abort();
             
@@ -383,7 +402,6 @@ cmd_line_exec(command_t *cmdlist)
                     break;
                 case CMD_BACKGROUND:
                 case CMD_PIPE:
-		    
                     cmd_status = 0;
                     break;
             }

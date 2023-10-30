@@ -323,23 +323,18 @@ cmd_parse(parsestate_t *parsestate)
              //     have been given fit together. (It may be helpful to
              //     look over cmdparse.h again.)
             /* Your code here. */
-	
-			if (i > 0 || cmd->subshell != NULL) {
+			//check more than one command and shell
+			if (i > 0 || cmd->subshell != NULL) { 
 				goto error;
 			}
+			//create subshell
 			cmd->subshell = cmd_line_parse(parsestate, 1);
-			/*
-			parse_gettoken(parsestate, &token);
-			if(token.type == TOK_OPEN_PAREN) {
-				goto error;
-			}
-			parse_ungettoken(parsestate);
-			*/
 			break;
-
+		
+		//handle end
 		case TOK_END:
 			goto done;
-
+		//handle error
 		case TOK_ERROR:
 			goto error;
 
