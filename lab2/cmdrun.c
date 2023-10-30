@@ -230,7 +230,7 @@ cmd_exec(command_t *cmd, int *pass_pipefd)
 			dup2(fd, STDIN_FILENO);
 			close(fd);
 		}
-		
+		//redirect stderr
 		if (cmd->redirect_filename[2]) {
 			fd = open(cmd->redirect_filename[2], O_CREAT|O_WRONLY, 0666);
 			dup2(fd, STDERR_FILENO);
@@ -255,11 +255,11 @@ cmd_exec(command_t *cmd, int *pass_pipefd)
 	            dup2(STDOUT_FILENO, 1);
         	}
 
-		
+		//if there's a subshell execute it
 		if (cmd->subshell) {
-            	
 			exit(cmd_line_exec(cmd->subshell));
 		} 
+		//check whether that file exists
 		else if (strcmp(cmd->argv[0], "cd") == 0) {
 			if (cmd->argv[1]) {
 				int fd = open(cmd->argv[1], O_RDONLY);
@@ -273,9 +273,9 @@ cmd_exec(command_t *cmd, int *pass_pipefd)
 					}
 				}
 				else {
-					exit(1);
+					exit(1); //success
 				}
-				exit(0);
+				exit(0); // fail
 			}
         	} 
 		else if (strcmp(cmd->argv[0], "exit") == 0){
@@ -292,22 +292,22 @@ cmd_exec(command_t *cmd, int *pass_pipefd)
     	else { //father
 	int wp_status;
 	while (1) {
-        pid_t wpid = waitpid(-1, &wp_status, WNOHANG);
-	        if (wpid == -1) {
+        pid_t w_pid = waitpid(-1, &wp_status, WNOHANG); // wait for all the child
+	        if (w_pid == -1) {
 	            perror("waitpid");
 	            exit(EXIT_FAILURE);
 	        }
-		 else if (wpid == 0) {
+		 else if (w_pid == 0) {
 	            break; // No more child processes
 	        }
-        // Do something with wp_status, such as logging or handling errors
+        
     	}
-        if (cmd->argv[0]) {
+        if (cmd->argv[0]) { //check special commands
 			if (strcmp(cmd->argv[0], "cd") == 0) {
-				chdir(cmd->argv[1] ? cmd->argv[1] : getenv("HOME"));
+				chdir(cmd->argv[1] ? cmd->argv[1] : getenv("HOME")); // if has directory, go there, else go to HOME
 			} 
 			else if (strcmp(cmd->argv[0], "exit") == 0) {
-				if(!cmd->argv[2])
+				if(!cmd->argv[2])//no more than 1 arugments
 					exit(0);
 			} 
 	}
@@ -316,16 +316,18 @@ cmd_exec(command_t *cmd, int *pass_pipefd)
             close(*pass_pipefd);
 	    //close(pipefd[1]);
 	}
+	
         if (cmd->controlop == CMD_PIPE) {
             *pass_pipefd = pipefd[0];
 	     close(pipefd[1]);
+	     //close(pipefd[0]);
         } 
 	else
             *pass_pipefd = STDIN_FILENO;
         
 		
 
-}
+	}
 
 
 	// return the child process ID
@@ -387,13 +389,15 @@ cmd_line_exec(command_t *cmdlist)
                         cmd_status = WEXITSTATUS(wp_status);
                     break;
                 case CMD_AND:
-                    waitpid(id, &wp_status, 0);
+		    // wait, if it's not 0, go to done
+                    waitpid(id, &wp_status, 0); 
                     if (WEXITSTATUS(wp_status) != 0) {
                         cmd_status = WEXITSTATUS(wp_status);
                         goto done;
                     }
                     break;
                 case CMD_OR:
+		    // wait, if it's  0, go to done
                     waitpid(id, &wp_status, 0);
                     if (WEXITSTATUS(wp_status) == 0) {
                         cmd_status = 0; // EXIT_SUCCESS
@@ -401,7 +405,8 @@ cmd_line_exec(command_t *cmdlist)
                     }
                     break;
                 case CMD_BACKGROUND:
-                case CMD_PIPE:
+                case CMD_PIPE: 
+		    //pretend it's 0
                     cmd_status = 0;
                     break;
             }

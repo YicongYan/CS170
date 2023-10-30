@@ -1,7 +1,7 @@
 Name: Yicong Yan	
 PERM #: 8087736
 
-Collaborators (who you talked to about the lab, what you talked about): TA
+Collaborators (who you talked to about the lab, what you talked about): TA, talk about it with Aasish Sai Virjal.
 
 
 Source material that you consulted: linux man page, google, chatgpt,
