@@ -1,5 +1,6 @@
 #include <cstring>
 #include <cstdlib>
+#include <stdio.h>
 
 #include "EStore.h"
 #include "TaskQueue.h"
@@ -142,10 +143,41 @@ customer(void* arg)
  *
  * ------------------------------------------------------------------
  */
+static void * test1(void* arg){
+	printf("1\n");
+}
+static void * test2(void* arg){
+	printf("2\n");
+}
+static void * test3(void* arg){
+	printf("3\n");
+}
+static void * test4(void* arg){
+	printf("4\n");
+}
+
 static void
 startSimulation(int numSuppliers, int numCustomers, int maxTasks, bool useFineMode)
-{
+{	
+	
     // TODO: Your code here.
+	Simulation sim(useFineMode);
+	sim.maxTasks = maxTasks;
+	sim.numSuppliers = numSuppliers;
+	sim.numCustomers = numCustomers;
+	sthread_t sup_gen;
+	sthread_t cus_gen; 
+	sthread_t Suppliers_t;
+	sthread_t Customers_t;
+	sthread_create(&sup_gen,supplierGenerator, &sim);
+	sthread_create(&cus_gen,customerGenerator, &sim);
+	sthread_create(&Suppliers_t,supplier, &sim);
+	sthread_create(&Customers_t,customer, &sim);
+	sthread_join(sup_gen);
+	sthread_join(cus_gen);
+	sthread_join(Suppliers_t);
+	sthread_join(Customers_t);
+	
 }
 
 int main(int argc, char **argv)

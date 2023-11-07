@@ -1,5 +1,5 @@
 #pragma once
-
+#include <queue>
 
 #include "sthread.h"
 
@@ -21,6 +21,7 @@ struct Task {
  */
 class TaskQueue {
     private:
+    std::queue<Task> q;
     // TODO: More needed here.
 
     public:
