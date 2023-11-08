@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "sthread.h"
 
 #define INVENTORY_SIZE 100
 

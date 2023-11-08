@@ -4,6 +4,7 @@
 
 #include "EStore.h"
 #include "TaskQueue.h"
+#include "RequestGenerator.h"
 
 class Simulation
 {
@@ -44,7 +45,11 @@ static void*
 supplierGenerator(void* arg)
 {
     // TODO: Your code here.
-    return NULL; // Keep compiler happy.
+    Simulation * sim = (Simulation*)arg;
+    SupplierRequestGenerator generator(&(sim->supplierTasks));
+    generator.enqueueTasks(sim->maxTasks, &(sim->store));
+    
+    sthread_exit();
 }
 
 /*
@@ -96,7 +101,9 @@ static void*
 supplier(void* arg)
 {
     // TODO: Your code here.
-    return NULL; // Keep compiler happy.
+    Simulation * sim = (Simulation*)arg;
+    Task task = sim->supplierTasks.dequeue();
+    (*task.handler)(arg);
 }
 
 /*
@@ -116,8 +123,9 @@ supplier(void* arg)
 static void*
 customer(void* arg)
 {
-    // TODO: Your code here.
-    return NULL; // Keep compiler happy.
+   Simulation * sim = (Simulation*)arg;
+    Task task = sim->customerTasks.dequeue();
+    (*task.handler)(arg);
 }
 
 /*
@@ -143,6 +151,7 @@ customer(void* arg)
  *
  * ------------------------------------------------------------------
  */
+/*
 static void * test1(void* arg){
 	printf("1\n");
 }
@@ -155,7 +164,7 @@ static void * test3(void* arg){
 static void * test4(void* arg){
 	printf("4\n");
 }
-
+*/
 static void
 startSimulation(int numSuppliers, int numCustomers, int maxTasks, bool useFineMode)
 {	
