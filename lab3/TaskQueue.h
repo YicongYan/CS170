@@ -21,8 +21,12 @@ struct Task {
  */
 class TaskQueue {
     private:
-    std::queue<Task> q;
+    
     // TODO: More needed here.
+    std::queue<Task> q;
+    scond_t WaitForSup;
+    scond_t WaitForCos;
+    smutex_t mutex;
 
     public:
     TaskQueue();
