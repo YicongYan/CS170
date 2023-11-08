@@ -3,7 +3,6 @@
 #include <cassert>
 #include <set>
 
-
 #include "RequestHandlers.h"
 #include "RequestGenerator.h"
 
@@ -82,6 +81,17 @@ void RequestGenerator::
 enqueueStops(int num)
 {
     // TODO: Your code here.
+    taskCount = 0;
+
+    while (taskCount < num || num < 0) {
+        Task task ;
+        task.arg = NULL;
+        task.handler = stop_handler;
+        
+        this->taskQueue->enqueue(task);
+
+        taskCount++;
+    }
 }
 
 SupplierRequestGenerator::

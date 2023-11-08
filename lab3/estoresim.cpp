@@ -1,10 +1,12 @@
 #include <cstring>
 #include <cstdlib>
-#include <stdio.h>
+#include <iostream>
 
 #include "EStore.h"
 #include "TaskQueue.h"
 #include "RequestGenerator.h"
+
+using namespace std;
 
 class Simulation
 {
@@ -45,11 +47,16 @@ static void*
 supplierGenerator(void* arg)
 {
     // TODO: Your code here.
-    Simulation * sim = (Simulation*)arg;
-    SupplierRequestGenerator generator(&(sim->supplierTasks));
+    cout << "Running supplier generator...\n";
+
+    Simulation *sim = (Simulation *)arg;
+    SupplierRequestGenerator generator(&sim->supplierTasks);
     generator.enqueueTasks(sim->maxTasks, &(sim->store));
-    
+    generator.enqueueStops(sim->numSuppliers);
+
     sthread_exit();
+
+    return NULL;
 }
 
 /*
@@ -80,7 +87,16 @@ static void*
 customerGenerator(void* arg)
 {
     // TODO: Your code here.
-    return NULL; // Keep compiler happy.
+    cout << "Running customer generator...\n";
+
+    Simulation *sim = (Simulation *)arg;
+    CustomerRequestGenerator  generator(&sim->customerTasks, sim->store.fineModeEnabled());
+    generator.enqueueTasks(sim->maxTasks, &(sim->store));
+    generator.enqueueStops(sim->numCustomers);
+
+    sthread_exit();
+
+    return NULL;
 }
 
 /*
@@ -101,9 +117,15 @@ static void*
 supplier(void* arg)
 {
     // TODO: Your code here.
-    Simulation * sim = (Simulation*)arg;
-    Task task = sim->supplierTasks.dequeue();
-    (*task.handler)(arg);
+    Simulation *sim = (Simulation *)arg;
+
+    while (true) {
+        Task task = sim->supplierTasks.dequeue();
+
+        task.handler(task.arg);
+    }
+
+    return NULL; // Keep compiler happy.
 }
 
 /*
@@ -123,9 +145,16 @@ supplier(void* arg)
 static void*
 customer(void* arg)
 {
-   Simulation * sim = (Simulation*)arg;
-    Task task = sim->customerTasks.dequeue();
-    (*task.handler)(arg);
+    // TODO: Your code here.
+    Simulation *sim = (Simulation *)arg;
+
+    while (true) {
+        Task task = sim->customerTasks.dequeue();
+
+        task.handler(task.arg);
+    }
+
+    return NULL; // Keep compiler happy.
 }
 
 /*
@@ -151,42 +180,45 @@ customer(void* arg)
  *
  * ------------------------------------------------------------------
  */
-/*
-static void * test1(void* arg){
-	printf("1\n");
-}
-static void * test2(void* arg){
-	printf("2\n");
-}
-static void * test3(void* arg){
-	printf("3\n");
-}
-static void * test4(void* arg){
-	printf("4\n");
-}
-*/
 static void
 startSimulation(int numSuppliers, int numCustomers, int maxTasks, bool useFineMode)
-{	
-	
+{
     // TODO: Your code here.
-	Simulation sim(useFineMode);
-	sim.maxTasks = maxTasks;
-	sim.numSuppliers = numSuppliers;
-	sim.numCustomers = numCustomers;
-	sthread_t sup_gen;
-	sthread_t cus_gen; 
-	sthread_t Suppliers_t;
-	sthread_t Customers_t;
-	sthread_create(&sup_gen,supplierGenerator, &sim);
-	sthread_create(&cus_gen,customerGenerator, &sim);
-	sthread_create(&Suppliers_t,supplier, &sim);
-	sthread_create(&Customers_t,customer, &sim);
-	sthread_join(sup_gen);
-	sthread_join(cus_gen);
-	sthread_join(Suppliers_t);
-	sthread_join(Customers_t);
-	
+    cout << "Simulation starts...\n";
+
+    Simulation *simulation = new Simulation(useFineMode);
+    simulation->maxTasks = maxTasks;
+    simulation->numSuppliers = numSuppliers;
+    simulation->numCustomers = numCustomers;
+
+    sthread_t supplier_generator_worker;
+    sthread_t customer_generator_worker;
+    sthread_t supplier_workers[numSuppliers];
+    sthread_t customer_workers[numCustomers];
+
+    sthread_create(&supplier_generator_worker, supplierGenerator, simulation);
+    sthread_create(&customer_generator_worker, customerGenerator, simulation);
+
+    sthread_join(supplier_generator_worker);
+    sthread_join(customer_generator_worker);
+
+    for (int i = 0; i < numSuppliers; i++) {
+        sthread_create(&supplier_workers[i], supplier, simulation);
+    }
+
+    for (int i = 0; i < numCustomers; i++) {
+        sthread_create(&customer_workers[i], customer, simulation);
+    }
+
+    for (int i = 0; i < numSuppliers; i++) {
+        sthread_join(supplier_workers[i]);
+    }
+
+    for (int i = 0; i < numCustomers; i++) {
+        sthread_join(customer_workers[i]);
+    }
+
+    cout << "Simulation ends...\n";
 }
 
 int main(int argc, char **argv)

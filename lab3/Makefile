@@ -13,7 +13,6 @@ SIM_OBJS	:=	estoresim.o 		\
 			RequestGenerator.o	\
 			RequestHandlers.o	\
 			sthread.o
-			
 
 SIM_OBJS	:= $(patsubst %.o,$(BUILD)/%.o,$(SIM_OBJS))
 

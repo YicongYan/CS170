@@ -1,7 +1,10 @@
 #pragma once
-#include <queue>
+
 
 #include "sthread.h"
+#include <queue>
+
+using namespace std;
 
 typedef void (*handler_t) (void *); 
 
@@ -21,12 +24,10 @@ struct Task {
  */
 class TaskQueue {
     private:
-    
     // TODO: More needed here.
-    std::queue<Task> q;
-    scond_t WaitForSup;
-    scond_t WaitForCos;
     smutex_t mutex;
+    scond_t waiting;
+    queue<Task> q;
 
     public:
     TaskQueue();
