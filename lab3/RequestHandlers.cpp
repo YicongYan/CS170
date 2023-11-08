@@ -185,6 +185,6 @@ void
 stop_handler(void* args)
 {
     // TODO: Your code here.
-    sthread_exit(NULL);
+    sthread_exit();
 }
 
