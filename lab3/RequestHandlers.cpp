@@ -24,10 +24,11 @@ add_item_handler(void *args)
 {
     // TODO: Your code here.
     AddItemReq *add_item_request = (AddItemReq *)args;
-    int item_id = add_item_request->item_id;
+    
     int quantity = add_item_request->quantity;
-    double price = add_item_request->price;
+    int item_id = add_item_request->item_id;
     double discount = add_item_request->discount;
+    double price = add_item_request->price;
 
     printf("Handling AddItemReq: item_id - %d, quantity - %d, price - %.2f, discount - %.2f\n", item_id, quantity, price, discount);
 
@@ -221,7 +222,6 @@ buy_item_handler(void *args)
     BuyItemReq *buy_item_request = (BuyItemReq *)args;
     int item_id = buy_item_request->item_id;
     double budget = buy_item_request->budget;
-
     printf("Handling BuyItemReq: item_id - %d, budget - $%.2f\n", item_id, budget);
 
     buy_item_request->store->buyItem(item_id, budget);
