@@ -58,11 +58,11 @@ empty()
     // TODO: Your code here.
     smutex_lock(&(this->mutex));
 
-    bool is_empty = this->q.empty();
+    bool empty = this->q.empty();
 
     smutex_unlock(&(this->mutex));
 
-    return is_empty; // Keep compiler happy until routine done.
+    return empty; // Keep compiler happy until routine done.
 }
 
 /*

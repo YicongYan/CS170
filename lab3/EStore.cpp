@@ -1,5 +1,5 @@
 #include <cassert>
-
+#include <cstdio>
 #include "EStore.h"
 
 using namespace std;
@@ -82,7 +82,7 @@ void EStore::
 buyItem(int item_id, double budget)
 {
     assert(!fineModeEnabled());
-
+	
     // TODO: Your code here.
     if (item_id < 0 || item_id >= INVENTORY_SIZE) {
         return;
@@ -94,7 +94,7 @@ buyItem(int item_id, double budget)
 
     if (!item.valid) {
         smutex_unlock(&this->mutex);
-
+	printf("No such a item!\n");
         return;
     }
 
@@ -156,7 +156,7 @@ void EStore::
 buyManyItems(vector<int>* item_ids, double budget)
 {
     assert(fineModeEnabled());
-
+     /*
     // TODO: Your code here.
     double total_cost = 0;
 
@@ -197,6 +197,7 @@ buyManyItems(vector<int>* item_ids, double budget)
 
         smutex_unlock(&this->mutexs[item_id]);
     }
+    */
 }
 
 /*

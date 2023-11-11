@@ -31,7 +31,7 @@ add_item_handler(void *args)
     double price = add_item_request->price;
 
     printf("Handling AddItemReq: item_id - %d, quantity - %d, price - %.2f, discount - %.2f\n", item_id, quantity, price, discount);
-
+    fflush(stdout);
     add_item_request->store->addItem(item_id, quantity, price, discount);
 
     delete add_item_request;
@@ -58,7 +58,7 @@ remove_item_handler(void *args)
     int item_id = remove_item_request->item_id;
 
     printf("Handling RemoveItemReq: item_id - %d\n", item_id);
-
+    fflush(stdout);
     remove_item_request->store->removeItem(item_id);
 
     delete remove_item_request;
@@ -86,7 +86,7 @@ add_stock_handler(void *args)
     int additional_stock = add_stock_request->additional_stock;
 
     printf("Handling AddStockReq: item_id - %d, additional_stock - %d\n", item_id, additional_stock);
-
+    fflush(stdout);
     add_stock_request->store->addStock(item_id, additional_stock);
 
     delete add_stock_request;
@@ -114,7 +114,7 @@ change_item_price_handler(void *args)
     double new_price = change_item_price_request->new_price;
 
     printf("Handling ChangeItemPriceReq: item_id - %d, new_price - %.2f\n", item_id, new_price);
-
+    fflush(stdout);
     change_item_price_request->store->priceItem(item_id, new_price);
 
     delete change_item_price_request;
@@ -142,7 +142,7 @@ change_item_discount_handler(void *args)
     double new_discount = change_item_discount_request->new_discount;
 
     printf("Handling ChangeItemDiscountReq: item_id - %d, new_discount - %.2f\n", item_id, new_discount);
-
+    fflush(stdout);
     change_item_discount_request->store->discountItem(item_id, new_discount);
 
     delete change_item_discount_request;
@@ -169,7 +169,7 @@ set_shipping_cost_handler(void *args)
     double new_cost = set_shipping_cost_request->new_cost;
 
     printf("Handling SetShippingCostReq: new_cost - %.2f\n", new_cost);
-
+    fflush(stdout);
     set_shipping_cost_request->store->setShippingCost(new_cost);
 
     delete set_shipping_cost_request;
@@ -196,7 +196,7 @@ set_store_discount_handler(void *args)
     double new_discount = set_store_discount_request->new_discount;
 
     printf("Handling SetStoreDiscountReq: new_discount - %.2f\n", new_discount);
-
+    fflush(stdout);
     set_store_discount_request->store->setStoreDiscount(new_discount);
 
     delete set_store_discount_request;
@@ -223,7 +223,7 @@ buy_item_handler(void *args)
     int item_id = buy_item_request->item_id;
     double budget = buy_item_request->budget;
     printf("Handling BuyItemReq: item_id - %d, budget - $%.2f\n", item_id, budget);
-
+    fflush(stdout);
     buy_item_request->store->buyItem(item_id, budget);
 
     delete buy_item_request;
@@ -251,7 +251,7 @@ buy_many_items_handler(void *args)
     double budget = buy_many_items_request->budget;
 
     printf("Handling BuyManyItemsReq: item_ids - ");
-
+    fflush(stdout);
     for (unsigned int i = 0; i < item_ids->size(); i++) {
         int item_id = item_ids->data()[i];
 
@@ -285,7 +285,7 @@ stop_handler(void* args)
 {
     // TODO: Your code here.
     printf("Handling StopHandlerReq: Quitting.\n");
-
+    fflush(stdout);
     sthread_exit();
 }
 
