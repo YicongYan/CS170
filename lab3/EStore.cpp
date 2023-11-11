@@ -26,7 +26,12 @@ EStore(bool enableFineMode)
     
     smutex_init(&this->mutex);
     scond_init(&this->avl);
-
+    for(int i = 0; i < INVENTORY_SIZE; i++){
+	inventory[i].valid = false;
+        inventory[i].quantity = 0;
+        inventory[i].price = 0;
+        inventory[i].discount = 0;
+    }
     if (this->fineMode) {
         for (int i = 0; i < INVENTORY_SIZE; i++) {
             smutex_init(&this->mutexs[i]);
@@ -94,7 +99,7 @@ buyItem(int item_id, double budget)
 
     if (!item.valid) {
         smutex_unlock(&this->mutex);
-	printf("No such a item!\n");
+	//printf("No such a item!\n");
         return;
     }
 
@@ -156,12 +161,12 @@ void EStore::
 buyManyItems(vector<int>* item_ids, double budget)
 {
     assert(fineModeEnabled());
-     /*
+     
     // TODO: Your code here.
-    double total_cost = 0;
+    double total = 0;
 
     for (unsigned int i = 0; i < item_ids->size(); i++) {
-        int item_id = item_ids->data()[i];
+        int item_id = (*item_ids)[i];
 
         if (item_id < 0 || item_id >= INVENTORY_SIZE) {
             return;
@@ -171,23 +176,24 @@ buyManyItems(vector<int>* item_ids, double budget)
 
         Item item = this->inventory[item_id];
 
-        if (!item.valid || item.quantity == 0) {
+        if (item.quantity == 0 || !item.valid ) {
             smutex_unlock(&this->mutexs[item_id]);
 
             return;
         }
 
-        total_cost += item.price * (1 - item.discount) + this->shipping_cost;
+        total += item.price * (1 - item.discount) + this->shipping_cost;
 
-        if (total_cost > budget) {
+        if (total > budget) {
             smutex_unlock(&this->mutexs[item_id]);
 
             return;
         }
 
+	
         smutex_unlock(&this->mutexs[item_id]);
     }
-
+    //reduce the amount, if the entire order can be processed
     for (unsigned int i = 0; i < item_ids->size(); i++) {
         int item_id = item_ids->data()[i];
 
@@ -197,7 +203,7 @@ buyManyItems(vector<int>* item_ids, double budget)
 
         smutex_unlock(&this->mutexs[item_id]);
     }
-    */
+    
 }
 
 /*
