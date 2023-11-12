@@ -82,12 +82,15 @@ enqueueStops(int num)
 {
     // TODO: Your code here.
     taskCount = 0;
-
+   //while it has not reached the number require, keep generating stop request
     while (taskCount < num || num < 0) {
         Task task ;
         task.arg = NULL;
+
+	//use stop handler
         task.handler = stop_handler;
-        
+
+        //put the stop request in the queue
         this->taskQueue->enqueue(task);
 
         taskCount++;

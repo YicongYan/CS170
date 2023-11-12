@@ -50,8 +50,13 @@ supplierGenerator(void* arg)
     cout << "Running supplier generator...\n";
 
     Simulation *sim = (Simulation *)arg;
+    //create an generator
     SupplierRequestGenerator generator(&sim->supplierTasks);
+
+    //enqueue Tasks
     generator.enqueueTasks(sim->maxTasks, &(sim->store));
+
+    //enqueue stop requests
     generator.enqueueStops(sim->numSuppliers);
 
     sthread_exit();
@@ -90,8 +95,13 @@ customerGenerator(void* arg)
     cout << "Running customer generator...\n";
 
     Simulation *sim = (Simulation *)arg;
+    //create generator
     CustomerRequestGenerator  generator(&sim->customerTasks, sim->store.fineModeEnabled());
+
+    //enqueue tasks 
     generator.enqueueTasks(sim->maxTasks, &(sim->store));
+
+    //enque stop requests
     generator.enqueueStops(sim->numCustomers);
 
     sthread_exit();
@@ -119,10 +129,11 @@ supplier(void* arg)
     // TODO: Your code here.
    
     Simulation *sim = (Simulation *)arg;
+    //constantly consuming taks if there's one
     while (true) {
-	 
+	 //consume a task
         Task task = sim->supplierTasks.dequeue();
-
+	//execute the task
         task.handler(task.arg);
     }
 
@@ -149,9 +160,11 @@ customer(void* arg)
     // TODO: Your code here.
     
     Simulation *sim = (Simulation *)arg;
+    //constantly consuming taks if there's one
     while (true) {
-         
+         //consume the task
         Task task = sim->customerTasks.dequeue();
+	//execute the task
         task.handler(task.arg);
     }
 
@@ -192,11 +205,12 @@ startSimulation(int numSuppliers, int numCustomers, int maxTasks, bool useFineMo
     simulation->numSuppliers = numSuppliers;
     simulation->numCustomers = numCustomers;
 
+    
     sthread_t supplier_generator_worker;
     sthread_t customer_generator_worker;
     sthread_t supplier_workers[numSuppliers];
     sthread_t customer_workers[numCustomers];
-
+    //creat provider and consumer
     sthread_create(&supplier_generator_worker, supplierGenerator, simulation);
     sthread_create(&customer_generator_worker, customerGenerator, simulation);
 
@@ -208,7 +222,7 @@ startSimulation(int numSuppliers, int numCustomers, int maxTasks, bool useFineMo
         sthread_create(&supplier_workers[i], supplier, simulation);
     }
 
-    
+    //wait for all the threads to finish
     sthread_join(supplier_generator_worker);
 
     sthread_join(customer_generator_worker);

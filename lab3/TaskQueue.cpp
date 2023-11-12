@@ -13,6 +13,7 @@ TaskQueue::
 ~TaskQueue()
 {
     // TODO: Your code here.
+    //destory CVs and lock
     smutex_destroy(&this->mutex);
     scond_destroy(&this->waiting);
 }
@@ -33,9 +34,9 @@ size()
 {
     // TODO: Your code here.
     smutex_lock(&this->mutex);
-
+    //get size
     int size = this->q.size();
-
+    
     smutex_unlock(&this->mutex);
 
     return size; // Keep compiler happy until routine done.
@@ -57,7 +58,7 @@ empty()
 {
     // TODO: Your code here.
     smutex_lock(&(this->mutex));
-
+    //check whether it's empty
     bool empty = this->q.empty();
 
     smutex_unlock(&(this->mutex));
@@ -81,7 +82,7 @@ enqueue(Task task)
 {
     // TODO: Your code here.
     smutex_lock(&this->mutex);
-
+    //push it the back
     this->q.push(task);
 
     scond_signal(&this->waiting, &this->mutex);
@@ -105,7 +106,7 @@ dequeue()
 {
     // TODO: Your code here.
     smutex_lock(&this->mutex);
-
+    //if the queue it's empty, it has to wait
     while (this->q.empty()) {
         scond_wait(&this->waiting, &this->mutex);
     }

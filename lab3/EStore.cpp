@@ -24,14 +24,17 @@ EStore(bool enableFineMode)
     this->store_discount = 0;
     this->shipping_cost = 3;
     
+    //initialize the lock and CV
     smutex_init(&this->mutex);
     scond_init(&this->avl);
+    //initialize item list
     for(int i = 0; i < INVENTORY_SIZE; i++){
 	inventory[i].valid = false;
         inventory[i].quantity = 0;
         inventory[i].price = 0;
         inventory[i].discount = 0;
     }
+    //set mode
     if (this->fineMode) {
         for (int i = 0; i < INVENTORY_SIZE; i++) {
             smutex_init(&this->mutexs[i]);
@@ -43,9 +46,10 @@ EStore::
 ~EStore()
 {
     // TODO: Your code here.
+    //delete lock and CV
     smutex_destroy(&this->mutex);
     scond_destroy(&this->avl);
-
+    //check mode
     if (this->fineMode) {
         for (int i = 0; i < INVENTORY_SIZE; i++) {
             smutex_destroy(&this->mutexs[i]);
@@ -96,14 +100,14 @@ buyItem(int item_id, double budget)
     smutex_lock(&this->mutex);
 
     Item item = this->inventory[item_id];
-
+    //check whethter the store has it
     if (!item.valid) {
         smutex_unlock(&this->mutex);
 	//printf("No such a item!\n");
         return;
     }
-
-    while (item.quantity == 0 ||  (item.price * (1 - item.discount) + this->shipping_cost) - budget > 0.0000001 ) {
+    //if not available or not enought money
+    while (item.quantity == 0 ||  (item.price * (1 - item.discount) * (1 - this->store_discount) + this->shipping_cost) - budget > 0.0000001 ) {
         scond_wait(&this->avl, &this->mutex);
     }
 
@@ -167,7 +171,7 @@ buyManyItems(vector<int>* item_ids, double budget)
 
     for (unsigned int i = 0; i < item_ids->size(); i++) {
         int item_id = (*item_ids)[i];
-
+    //validation
         if (item_id < 0 || item_id >= INVENTORY_SIZE) {
             return;
         }
@@ -175,18 +179,17 @@ buyManyItems(vector<int>* item_ids, double budget)
         smutex_lock(&this->mutexs[item_id]);
 
         Item item = this->inventory[item_id];
-
+    //in stock or not available
         if (item.quantity == 0 || !item.valid ) {
             smutex_unlock(&this->mutexs[item_id]);
 
             return;
         }
-
-        total += item.price * (1 - item.discount) + this->shipping_cost;
-
+    //add to total price
+        total += item.price * (1 - item.discount) *  (1 - this->store_discount) + this->shipping_cost;
+    //see whether we have enough money
         if (total > budget) {
             smutex_unlock(&this->mutexs[item_id]);
-
             return;
         }
 
@@ -198,7 +201,7 @@ buyManyItems(vector<int>* item_ids, double budget)
         int item_id = item_ids->data()[i];
 
         smutex_lock(&this->mutexs[item_id]);
-
+    //update item amount
         this->inventory[item_id].quantity--;
 
         smutex_unlock(&this->mutexs[item_id]);
@@ -230,17 +233,18 @@ addItem(int item_id, int quantity, double price, double discount)
     smutex_t *mutex = this->fineMode ? &this->mutexs[item_id] : &this->mutex;
 
     smutex_lock(mutex);
-
+    //if it's already in the store
     if (this->inventory[item_id].valid) {
         smutex_unlock(mutex);
         return;
     }
-
+    //add information
     this->inventory[item_id].valid = true;
     this->inventory[item_id].quantity = quantity;
+ this->inventory[item_id].discount = discount;
     this->inventory[item_id].price = price;
-    this->inventory[item_id].discount = discount;
-
+   
+    //wake up cusomters
     scond_broadcast(&this->avl, mutex);
     smutex_unlock(mutex);
 }
@@ -271,12 +275,12 @@ removeItem(int item_id)
     smutex_t *mutex = this->fineMode ? &this->mutexs[item_id] : &this->mutex;
 
     smutex_lock(mutex);
-
+    //if store doesn't have it
     if (!(this->inventory[item_id].valid)) {
         smutex_unlock(mutex);
         return;
     }
-
+    //set to not valid
     this->inventory[item_id].valid = false;
 
     smutex_unlock(mutex);
@@ -301,19 +305,19 @@ addStock(int item_id, int count)
     if (item_id < 0 || item_id >= INVENTORY_SIZE) {
         return;
     }
-
+    //check mode
     smutex_t *mutex = this->fineMode ? &this->mutexs[item_id] : &this->mutex;
 
     smutex_lock(mutex);
-
+    //not valid
     if (!(this->inventory[item_id].valid)) {
         smutex_unlock(mutex);
 
         return;
     }
-
+    //add items
     this->inventory[item_id].quantity += count;
-
+    //wake up costumers
     scond_broadcast(&this->avl, mutex);
     smutex_unlock(mutex);
 }
@@ -344,17 +348,17 @@ priceItem(int item_id, double price)
 
     smutex_lock(mutex);
 
-
+    //if the store doesn't have it
     if (!(this->inventory[item_id].valid)) {
         smutex_unlock(mutex);
 
         return;
     }
-
+    
     double original = this->inventory[item_id].price;
 
     this->inventory[item_id].price = price;
-
+    //wake up costumers if there's a lower price
     if (original > price) 
         scond_broadcast(&this->avl, mutex);
     
@@ -383,11 +387,11 @@ discountItem(int item_id, double discount)
     if (item_id < 0 || item_id >= INVENTORY_SIZE) {
         return;
     }
-
+    //check mode
     smutex_t *mutex = this->fineMode ? &this->mutexs[item_id] : &this->mutex;
 
     smutex_lock(mutex);
-
+    //if not in store
     if (!(this->inventory[item_id].valid)) {
         smutex_unlock(mutex);
         return;
@@ -396,7 +400,7 @@ discountItem(int item_id, double discount)
     double original= this->inventory[item_id].discount;
 
     this->inventory[item_id].discount = discount;
-
+    //wake up customer if lower price
     if (original< discount) 
         scond_broadcast(&this->avl, mutex);
     
@@ -424,7 +428,7 @@ setShippingCost(double cost)
     double original = this->shipping_cost;
 
     this->shipping_cost = cost;
-
+    //wake up customer if lower price
     if (original > cost) {
         scond_broadcast(&this->avl, &this->mutex);
     }
@@ -453,7 +457,7 @@ setStoreDiscount(double discount)
     double original = this->store_discount;
 
     this->store_discount = discount;
-
+    //wake up customer if lower price
     if (original < discount) {
         scond_broadcast(&this->avl, &this->mutex);
     }
