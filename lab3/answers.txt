@@ -1,10 +1,10 @@
-Name:
-PERM #: 
+Name:8087736
+PERM #: Yicong Yan
 
-Collaborators (who you talked to about the lab, what you talked about):
+Collaborators (who you talked to about the lab, what you talked about): TAs, talk about it with Shuyi Wan.
 
 
-Source material that you consulted:
+Source material that you consulted: textbook
 
 
 Other acknowledgments:
