@@ -9,31 +9,68 @@ Source material that you consulted:
 
 Other acknowledgments:
 
-
 -------------------------------------------------------------------------------
 
 Part 1:
 
 Exercise 1:
 
+1.1: 
+Informally, it means to search for the string "smutex" in the current directory and return the lines that contain it.
+
+1.2:
+sthread.cpp:void smutex_init(smutex_t *mutex)
+sthread.cpp:void smutex_destroy(smutex_t *mutex)
+sthread.cpp:void smutex_lock(smutex_t *mutex)
 
 Exercise 2:
+
+2.1:
+grep "Task" RequestGenerator.cpp
+
+2.2:
+grep -r "return" *.h
 
 
 Exercise 3:
 
+grep -r "smutex.*(.*);" .
+
+Let's first break down the string.
+
+"." means any character (except for a newline character) zero or more times.
+
+"(.*)" means any character (except for a newline character) zero or more times in parentheses.
+
+so "smutex.*(.*);" means "smutex" followed by any character then followed by any characters in parentheses, so it's describing the 
+function headers of smutex. 
+
+So the command would return the function headers of smutex within all my files.
 
 Exercise 4:
 
+It opens blkdev.h.
 
 Exercise 5: 
 
+ futex_pi_state is priority inheritance state, it's is used to maintain information about the priority inheritance state of a futex.
+
+It's defined in kernel/futex.c  line 188
 
 Exercise 6: 
+
+3 functions contain proc_sched and task, they are:
+
+proc_sched_autogroup_show_task  in kernel/sched/auto_group.c
+
+proc_sched_set_task             kernel/sched/debug.c
+
+proc_sched_show_task            kernel/sched/debug.c
 
 
 Exercise 7: 
 
+3915
 
 Part 2:
 (Exercise 8 is a coding exercise)
