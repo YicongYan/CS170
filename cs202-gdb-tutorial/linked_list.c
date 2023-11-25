@@ -10,10 +10,10 @@ void list_init(list_t *h) {
 int list_size(const list_t *h) {
     node_t *p = *h;
     int r = 0;
-    do {
+    while (p){
         r += 1;
         p = p->next;
-    } while (p);
+    } 
     return r;
 }
 

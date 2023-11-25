@@ -67,7 +67,7 @@ start(void)
 	// Set up hardware (x86.c)
 	segments_init();
 
-        zero = 202 / zero;
+        //zero = 202 / zero;
 	interrupt_controller_init(0);
 	console_clear();
 
@@ -161,7 +161,7 @@ interrupt(registers_t *reg)
 		schedule();
 
 	default:
-                zero = 202 / zero;
+               // zero = 202 / zero;
 		while (1)
 			/* do nothing */;
 
@@ -199,6 +199,15 @@ schedule(void)
 				run(&proc_array[pid]);
 		}
 
+	else if (scheduling_algorithm == 1) { // strict priority, p1 > p2 > p3 > p4
+		while(1) {
+			int i;
+			for(i = 1; i < NPROCS; i++) {
+				if(proc_array[i].p_state == P_RUNNABLE)
+					run(&proc_array[i]);
+			}
+		}
+	}
 	// If we get here, we are running an unknown scheduling algorithm.
 	cursorpos = console_printf(cursorpos, 0x100, "\nUnknown scheduling algorithm %d\n", scheduling_algorithm);
 	while (1)

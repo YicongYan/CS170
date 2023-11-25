@@ -77,27 +77,43 @@ Part 2:
 
 
 Exercise 9:
+Code after changed in linked_list.c:
 
+int list_size(const list_t *h) {
+    node_t *p = *h;
+    int r = 0;
+    while (p){
+        r += 1;
+        p = p->next; 
+    }
+    return r;
+}
+
+It was  a do while loop, when the list is empty, we search for the next element which does not exist,
+and that gives us an error when we use "p = p->next; "
 
 Exercise 10:
 
+skip
 
 Exercise 11:
 
+skip
 
 Exercise 12:
 
+skip
 
 (Exercise 13 is a coding exercise)
 
-
+skip
 
 Part 3:
 
 Exercise 14:
 
 The name of the scheduling algorithm is:
-
+Round robin scheduling since it execute the process one by one.
 
 (Exercise 15 is a coding exercise)
 
@@ -105,11 +121,34 @@ The name of the scheduling algorithm is:
 Exercise 16:
 
 Average turnaround time for scheduling_algorithm 0:
+
+320 Characters per process, 4 processes. Each process goes one at a time, waiting until the previous finished,
+ so average time is simply 320 x 4 = 1280 ms.
+
 Average turnaround time for scheduling_algorithm 1:
 
+P1 runs without delay, so we expect it to take 320 ms.
+P2 runs after P1, so we expect it to take 640 ms.
+P3 runs after P1 and P2, so we expect it to take 960  ms.
+P4 runs after P1, P2, and P3, so we expect it to take 1280  ms.
+The sum is 3200 ms, so the average turnaround time is 3200 / 4 = 800 ms.
+
+
 Average response time for scheduling_algorithm 0:
+
+P1 has no delay, 0ms response time.
+P2 runs  after P1, 1ms response time.
+P3 runs  after P2, 2ms response time.
+P4 runs  after P3, 3ms response time.
+The sum is 6ms, so the average response time is 6 / 4 = 1.5ms.
+
 Average response time for scheduling_algorithm 1:
 
+P1 has a delay of 0 ms.
+P2 runs after all of P1 finishes, has a delay of 320 ms.
+P3 runs after all of P2 finishes, has a delay of 640 ms.
+P4 runs after all of P3 finishes, has a delay of 960 ms.
+The sum is 1920 ms, so the average response time is 1920 / 4 = 480
 
 Exercise 17:
 
