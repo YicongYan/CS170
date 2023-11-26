@@ -1,6 +1,5 @@
-Name:
-PERM #:
-
+Name: Yicong Yan	
+PERM #: 8087736
 Collaborators (who you talked to about the lab, what you talked about):
 
 
@@ -154,9 +153,12 @@ Exercise 17:
 
 Did you complete Exercise 17A, Exercise 17B, or both?
 
+17a.
 
 Exercise 18:
 
+the first known timer interrupt happened during the execution of process 1, because a 1 is missing in the output at some point,
+which means the function was not called.
 
 (Exercise 19 is a coding exercise)
 

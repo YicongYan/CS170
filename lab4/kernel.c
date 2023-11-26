@@ -41,6 +41,8 @@
 // Note that proc_array[0] is never used.
 // The first application process descriptor is proc_array[1].
 static process_t proc_array[NPROCS];
+//this for algorithm 2
+static process_t exec_array[NPROCS];
 
 // A pointer to the currently running process.
 // This is kept up to date by the run() function, in x86.c.
@@ -68,7 +70,7 @@ start(void)
 	segments_init();
 
         //zero = 202 / zero;
-	interrupt_controller_init(0);
+	interrupt_controller_init(1);
 	console_clear();
 
 	// Initialize process descriptors as empty
@@ -76,6 +78,7 @@ start(void)
 	for (i = 0; i < NPROCS; i++) {
 		proc_array[i].p_pid = i;
 		proc_array[i].p_state = P_EMPTY;
+		proc_array[i].p_priority = 999;
 	}
 
 	// Set up process descriptors (the proc_array[])
@@ -94,6 +97,9 @@ start(void)
 
 		// Mark the process as runnable!
 		proc->p_state = P_RUNNABLE;
+
+		//Set priority
+		proc->p_priority = 0;
 	}
 
 	// Initialize the cursor-position shared variable to point to the
@@ -152,6 +158,7 @@ interrupt(registers_t *reg)
 
 	case INT_SYS_USER2:
 		/* Your code here (if you want). */
+		current->p_priority = reg->reg_eax;
 		run(current);
 
 	case INT_CLOCK:
@@ -208,6 +215,13 @@ schedule(void)
 			}
 		}
 	}
+
+	else if (scheduling_algorithm == 2) { 
+	//initialize the exec array
+	memset(proc_array, 0, sizeof(exec_array));
+	
+	}
+
 	// If we get here, we are running an unknown scheduling algorithm.
 	cursorpos = console_printf(cursorpos, 0x100, "\nUnknown scheduling algorithm %d\n", scheduling_algorithm);
 	while (1)
