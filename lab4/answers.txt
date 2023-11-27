@@ -121,8 +121,14 @@ Exercise 16:
 
 Average turnaround time for scheduling_algorithm 0:
 
-320 Characters per process, 4 processes. Each process goes one at a time, waiting until the previous finished,
- so average time is simply 320 x 4 = 1280 ms.
+320 Characters per process, 
+process 1: 1277 ms
+process 2: 1278 ms
+process 3: 1279 ms
+process 4: 1280 ms
+
+ so average turnaround time is simply (1277+1278+1279+1280) = 1278.5 ms.
+
 
 Average turnaround time for scheduling_algorithm 1:
 
@@ -131,6 +137,7 @@ P2 runs after P1, so we expect it to take 640 ms.
 P3 runs after P1 and P2, so we expect it to take 960  ms.
 P4 runs after P1, P2, and P3, so we expect it to take 1280  ms.
 The sum is 3200 ms, so the average turnaround time is 3200 / 4 = 800 ms.
+
 
 
 Average response time for scheduling_algorithm 0:

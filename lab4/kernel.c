@@ -41,8 +41,6 @@
 // Note that proc_array[0] is never used.
 // The first application process descriptor is proc_array[1].
 static process_t proc_array[NPROCS];
-//this for algorithm 2
-static process_t exec_array[NPROCS];
 
 // A pointer to the currently running process.
 // This is kept up to date by the run() function, in x86.c.
@@ -78,7 +76,7 @@ start(void)
 	for (i = 0; i < NPROCS; i++) {
 		proc_array[i].p_pid = i;
 		proc_array[i].p_state = P_EMPTY;
-		proc_array[i].p_priority = 999;
+		proc_array[i].p_priority = 0;
 	}
 
 	// Set up process descriptors (the proc_array[])
@@ -107,7 +105,11 @@ start(void)
 	cursorpos = (uint16_t *) 0xB8000;
 
 	// Initialize the scheduling algorithm.
-	scheduling_algorithm = 0;
+	scheduling_algorithm = 2;
+	proc_array[1].p_priority = 2;
+	proc_array[2].p_priority = 2;
+	proc_array[3].p_priority = 3;
+	proc_array[4].p_priority = 1;
 
 	// Switch to the first process.
 	run(&proc_array[1]);
@@ -206,7 +208,8 @@ schedule(void)
 				run(&proc_array[pid]);
 		}
 
-	else if (scheduling_algorithm == 1) { // strict priority, p1 > p2 > p3 > p4
+	// strict priority
+	else if (scheduling_algorithm == 1) { 
 		while(1) {
 			int i;
 			for(i = 1; i < NPROCS; i++) {
@@ -217,8 +220,32 @@ schedule(void)
 	}
 
 	else if (scheduling_algorithm == 2) { 
-	//initialize the exec array
-	memset(proc_array, 0, sizeof(exec_array));
+		
+			int max_priority = -9999;
+			pid_t pid;
+			pid_t max_pid = 1;
+			
+
+			for(pid = 1; pid < NPROCS; pid++) {
+				if(proc_array[pid].p_state == P_RUNNABLE){	
+					//update max priority	
+					if(proc_array[pid].p_priority > max_priority){
+						max_priority =proc_array[pid].p_priority;
+						max_pid = pid;
+					}		
+				}
+			}
+			
+			int i;
+			pid = current->p_pid;
+			for(i  = 0; i < NPROCS; i++)
+			{	
+				pid = (pid+1) % NPROCS;
+
+				if(proc_array[pid].p_state == P_RUNNABLE && proc_array[pid].p_priority == max_priority)
+					run(&proc_array[pid]);
+			}
+		
 	
 	}
 
