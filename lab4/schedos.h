@@ -23,4 +23,6 @@
 
 extern uint16_t * volatile cursorpos;
 
+extern uint32_t volatile mutex;
+
 #endif

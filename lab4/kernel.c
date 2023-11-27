@@ -105,7 +105,9 @@ start(void)
 	cursorpos = (uint16_t *) 0xB8000;
 
 	// Initialize the scheduling algorithm.
-	scheduling_algorithm = 2;
+	scheduling_algorithm = 1;
+	
+	//for algorithm2 test
 	proc_array[1].p_priority = 2;
 	proc_array[2].p_priority = 2;
 	proc_array[3].p_priority = 3;
@@ -210,13 +212,16 @@ schedule(void)
 
 	// strict priority
 	else if (scheduling_algorithm == 1) { 
-		while(1) {
-			int i;
-			for(i = 1; i < NPROCS; i++) {
-				if(proc_array[i].p_state == P_RUNNABLE)
-					run(&proc_array[i]);
+		
+		int i;
+		pid_t id = 1; 
+		for(i = 1; i < NPROCS; i++) {
+			if(proc_array[i].p_state == P_RUNNABLE){
+				id = i;
+				break;
 			}
 		}
+		run(&proc_array[id]);
 	}
 
 	else if (scheduling_algorithm == 2) { 
@@ -225,7 +230,7 @@ schedule(void)
 			pid_t pid;
 			pid_t max_pid = 1;
 			
-
+			//
 			for(pid = 1; pid < NPROCS; pid++) {
 				if(proc_array[pid].p_state == P_RUNNABLE){	
 					//update max priority	
