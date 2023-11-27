@@ -99,6 +99,9 @@ start(void)
 		//Set priority
 		proc->p_priority = 0;
 	}
+	
+	//set mutex as unlocked
+	mutex = 0;
 
 	// Initialize the cursor-position shared variable to point to the
 	// console's first character (the upper left).
@@ -155,14 +158,18 @@ interrupt(registers_t *reg)
 		schedule();
 
 	case INT_SYS_USER1:
-		// 'sys_user*' are provided for your convenience, in case you
-		// want to add a system call.
-		/* Your code here (if you want). */
+		//set p_priority
+		current->p_priority = reg->reg_eax;
 		run(current);
 
 	case INT_SYS_USER2:
-		/* Your code here (if you want). */
-		current->p_priority = reg->reg_eax;
+		//lock the mutex 
+		while(mutex == 1){};
+		mutex = 1;
+		run(current);
+
+	case INT_SYS_USER3:
+		mutex = 0;
 		run(current);
 
 	case INT_CLOCK:
@@ -215,7 +222,9 @@ schedule(void)
 		
 		int i;
 		pid_t id = 1; 
+		//traverse the whole array to pick process that has a high priority
 		for(i = 1; i < NPROCS; i++) {
+			//if a high priority process exists
 			if(proc_array[i].p_state == P_RUNNABLE){
 				id = i;
 				break;
@@ -230,7 +239,7 @@ schedule(void)
 			pid_t pid;
 			pid_t max_pid = 1;
 			
-			//
+			//find the process that has the highest priority which means a low p_priority
 			for(pid = 1; pid < NPROCS; pid++) {
 				if(proc_array[pid].p_state == P_RUNNABLE){	
 					//update max priority	
@@ -243,8 +252,10 @@ schedule(void)
 			
 			int i;
 			pid = current->p_pid;
+			//find the next highest priority process
 			for(i  = 0; i < NPROCS; i++)
 			{	
+				//next process
 				pid = (pid+1) % NPROCS;
 
 				if(proc_array[pid].p_state == P_RUNNABLE && proc_array[pid].p_priority == max_priority)

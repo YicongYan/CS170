@@ -61,4 +61,29 @@ sys_exit(int status)
     loop: goto loop; // Convince GCC that function truly does not return.
 }
 
+/* System call to set the priority of a process */
+static inline void sys_prior(int prior)
+{
+	asm volatile("int %0\n"
+		     : : "i" (INT_SYS_USER1),
+			 "a" (prior)
+		     : "cc", "memory");
+}
+
+/* System call to lock the lock */
+static inline void sys_lock_acquire(void)
+{
+	asm volatile("int %0\n"
+		     : : "i" (INT_SYS_USER2)
+		     : "cc", "memory");
+}
+
+/* System call to unlock the lock */
+static inline void sys_lock_release(void)
+{
+	asm volatile("int %0\n"
+		     : : "i" (INT_SYS_USER3)
+		     : "cc", "memory");
+
+}
 #endif
