@@ -108,14 +108,15 @@ start(void)
 	cursorpos = (uint16_t *) 0xB8000;
 
 	// Initialize the scheduling algorithm.
-	scheduling_algorithm = 0;
+	scheduling_algorithm = 2;
 	
 	//for algorithm2 test
+	/*
 	proc_array[1].p_priority = 1;
 	proc_array[2].p_priority = 1;
 	proc_array[3].p_priority = 1;
 	proc_array[4].p_priority = 4;
-
+	*/
 	// Switch to the first process.
 	run(&proc_array[1]);
 
@@ -157,18 +158,18 @@ interrupt(registers_t *reg)
 		current->p_exit_status = current->p_registers.reg_eax;
 		schedule();
 
-	case INT_SYS_USER1:
+	case INT_SYS_SETPRI:
 		//set p_priority
 		current->p_priority = reg->reg_eax;
 		run(current);
 
-	case INT_SYS_USER2:
-		//lock the mutex 
-		while(mutex == 1){};
+	case INT_SYS_LOCK:
+		//lock the mutex, if no one's using
+		while(mutex == 1){schedule();};
 		mutex = 1;
 		run(current);
 
-	case INT_SYS_USER3:
+	case INT_SYS_UNLOCK:
 		mutex = 0;
 		run(current);
 

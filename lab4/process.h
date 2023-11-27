@@ -65,7 +65,7 @@ sys_exit(int status)
 static inline void sys_prior(int prior)
 {
 	asm volatile("int %0\n"
-		     : : "i" (INT_SYS_USER1),
+		     : : "i" (INT_SYS_SETPRI),
 			 "a" (prior)
 		     : "cc", "memory");
 }
@@ -74,7 +74,7 @@ static inline void sys_prior(int prior)
 static inline void sys_lock_acquire(void)
 {
 	asm volatile("int %0\n"
-		     : : "i" (INT_SYS_USER2)
+		     : : "i" (INT_SYS_LOCK)
 		     : "cc", "memory");
 }
 
@@ -82,7 +82,7 @@ static inline void sys_lock_acquire(void)
 static inline void sys_lock_release(void)
 {
 	asm volatile("int %0\n"
-		     : : "i" (INT_SYS_USER3)
+		     : : "i" (INT_SYS_UNLOCK)
 		     : "cc", "memory");
 
 }

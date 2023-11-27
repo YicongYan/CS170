@@ -22,24 +22,23 @@ void
 pmain(void)
 {
 	int i;
-
+	//sys_prior(6);
 	for (i = 0; i < RUNCOUNT; i++) {
+		
+		sys_lock_acquire();
 		// Write characters to the console, yielding after each one.
-	while(atomic_swap((uint32_t*)&mutex,1) != 0){};
+		
 		*cursorpos++ = PRINTCHAR;
+		sys_lock_release();
 		sys_yield();
 	}
+
+	sys_exit(0);
 
 	/* this is the original code of the lab
 	Yield forever.
 	while (1)
 		sys_yield();
 	*/
-
-	/* this is to test all the scheduling algorithm
-	sys_exit(0);
-	*/
-
-	//this is for ex19
-	sys_exit(0);
+	
 }
