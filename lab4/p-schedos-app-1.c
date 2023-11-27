@@ -18,11 +18,18 @@
 #define PRINTCHAR	('1' | 0x0C00)
 #endif
 
+#ifndef PRIO
+#define PRIO 22 
+#endif
+
+
+
 void
 pmain(void)
-{
+{	
+	sys_prior(PRIO);
+	sys_yield();
 	int i;
-	//sys_prior(6);
 	for (i = 0; i < RUNCOUNT; i++) {
 		
 		sys_lock_acquire();

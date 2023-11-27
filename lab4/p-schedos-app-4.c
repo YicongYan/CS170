@@ -7,4 +7,8 @@
 
 #define PRINTCHAR	('4' | 0x0E00)
 
+
+#define PRIO 24
+
+
 #include "p-schedos-app-1.c"

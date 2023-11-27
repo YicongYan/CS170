@@ -76,7 +76,7 @@ start(void)
 	for (i = 0; i < NPROCS; i++) {
 		proc_array[i].p_pid = i;
 		proc_array[i].p_state = P_EMPTY;
-		proc_array[i].p_priority = 0;
+		//proc_array[i].p_priority = 1001;
 	}
 
 	// Set up process descriptors (the proc_array[])
@@ -97,7 +97,7 @@ start(void)
 		proc->p_state = P_RUNNABLE;
 
 		//Set priority
-		proc->p_priority = 0;
+		//proc->p_priority = 1001;
 	}
 	
 	//set mutex as unlocked
@@ -108,15 +108,9 @@ start(void)
 	cursorpos = (uint16_t *) 0xB8000;
 
 	// Initialize the scheduling algorithm.
-	scheduling_algorithm = 2;
+	scheduling_algorithm = 0;
 	
-	//for algorithm2 test
-	/*
-	proc_array[1].p_priority = 1;
-	proc_array[2].p_priority = 1;
-	proc_array[3].p_priority = 1;
-	proc_array[4].p_priority = 4;
-	*/
+	
 	// Switch to the first process.
 	run(&proc_array[1]);
 
@@ -220,48 +214,51 @@ schedule(void)
 
 	// strict priority
 	else if (scheduling_algorithm == 1) { 
-		
-		int i;
-		pid_t id = 1; 
-		//traverse the whole array to pick process that has a high priority
-		for(i = 1; i < NPROCS; i++) {
-			//if a high priority process exists
-			if(proc_array[i].p_state == P_RUNNABLE){
-				id = i;
-				break;
+		while(1){
+			int i;
+			pid_t id = 1; 
+			//traverse the whole array to pick process that has a high priority
+			for(i = 1; i < NPROCS; i++) {
+				//if a high priority process exists
+				if(proc_array[i].p_state == P_RUNNABLE){
+					id = i;
+					break;
+				}
 			}
+			run(&proc_array[id]);
 		}
-		run(&proc_array[id]);
 	}
 
 	else if (scheduling_algorithm == 2) { 
-		
 			int max_priority = 2147483647;
-			pid_t pid;
-			pid_t max_pid = 1;
-			
-			//find the process that has the highest priority which means a low p_priority
-			for(pid = 1; pid < NPROCS; pid++) {
-				if(proc_array[pid].p_state == P_RUNNABLE){	
-					//update max priority	
-					if(proc_array[pid].p_priority < max_priority){
-						max_priority =proc_array[pid].p_priority;
-						max_pid = pid;
-					}		
+			while(1){
+				
+				pid_t pid;
+				
+				//find the process that has the highest priority which means a low p_priority
+				for(pid = 1; pid < NPROCS; pid++) {
+					if(proc_array[pid].p_state == P_RUNNABLE){	
+						//update the max priority	
+						if(proc_array[pid].p_priority <= max_priority){
+							max_priority =proc_array[pid].p_priority;
+						}		
+					}
 				}
-			}
-			
-			int i;
-			pid = current->p_pid;
-			//find the next highest priority process
-			for(i  = 0; i < NPROCS; i++)
-			{	
-				//next process
-				pid = (pid+1) % NPROCS;
+				
+				int i;
+				pid = current->p_pid;
+				//find the next highest priority process
+				for(i  = 0; i < NPROCS; i++)
+				{	
+					//next process
+					pid = (pid+1) % NPROCS;
+					//execute it if it has the same priority
+					if(proc_array[pid].p_state == P_RUNNABLE && proc_array[pid].p_priority == max_priority){
 
-				if(proc_array[pid].p_state == P_RUNNABLE && proc_array[pid].p_priority == max_priority)
-					run(&proc_array[pid]);
-			}
+						run(&proc_array[pid]);					
+					}
+				}
+		      }
 		
 	
 	}

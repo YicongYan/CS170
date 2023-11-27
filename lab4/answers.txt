@@ -76,6 +76,7 @@ Part 2:
 
 
 Exercise 9:
+
 Code after changed in linked_list.c:
 
 int list_size(const list_t *h) {
@@ -88,24 +89,24 @@ int list_size(const list_t *h) {
     return r;
 }
 
-It was  a do while loop, when the list is empty, we search for the next element which does not exist,
-and that gives us an error when we use "p = p->next; "
+It was a do while loop before I changed it, when the list is empty, we search for the next element which does not exist,
+and that gives us an error when we use "p = p->next;" because p could be NULL here.
 
 Exercise 10:
 
-skip
+ The TA said we can skip this one due to the environment error
 
 Exercise 11:
 
-skip
+ The TA said we can skip this one due to the environment error
 
 Exercise 12:
 
-skip
+ The TA said we can skip this one due to the environment error
 
 (Exercise 13 is a coding exercise)
 
-skip
+ The TA said we can skip this one due to the environment error
 
 Part 3:
 
@@ -154,7 +155,7 @@ P1 has a delay of 0 ms.
 P2 runs after all of P1 finishes, has a delay of 320 ms.
 P3 runs after all of P2 finishes, has a delay of 640 ms.
 P4 runs after all of P3 finishes, has a delay of 960 ms.
-The sum is 1920 ms, so the average response time is 1920 / 4 = 480
+The sum is 1920 ms, so the average response time is 1920 / 4 = 480 ms
 
 Exercise 17:
 
