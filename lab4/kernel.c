@@ -228,7 +228,7 @@ schedule(void)
 			run(&proc_array[id]);
 		}
 	}
-
+	//priority for Exercise 17A
 	else if (scheduling_algorithm == 2) { 
 			int max_priority = 2147483647;
 			while(1){

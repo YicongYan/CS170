@@ -1,7 +1,7 @@
 Name: Yicong Yan	
 PERM #: 8087736
 Collaborators (who you talked to about the lab, what you talked about):
-
+Talk about it with Shuyi Wan and a guy but I forgot his name.
 
 Source material that you consulted:
 
@@ -18,9 +18,13 @@ Exercise 1:
 Informally, it means to search for the string "smutex" in the current directory and return the lines that contain it.
 
 1.2:
-sthread.cpp:void smutex_init(smutex_t *mutex)
-sthread.cpp:void smutex_destroy(smutex_t *mutex)
-sthread.cpp:void smutex_lock(smutex_t *mutex)
+
+ The first few lines are:
+
+EStore.cpp:    smutex_init(&this->mutex);
+EStore.cpp:    smutex_destroy(&this->mutex);
+EStore.cpp:    smutex_lock(&this->mutex);
+EStore.cpp:            smutex_unlock(&this->mutex);
 
 Exercise 2:
 
@@ -170,6 +174,7 @@ which means the function was not called.
 
 (Exercise 19 is a coding exercise)
 
+Implement a mutex to do ex 19.
 
 Anything else you'd like us to know:
 
