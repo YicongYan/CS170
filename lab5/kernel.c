@@ -371,17 +371,18 @@ int fork(void) {
 	
 	if (virtual_address_mapping.perm & PTE_W) {
 		 uintptr_t free_page = find_free_page();
+
 		//maybe doesn't need this if statement
-		if (free_page != -1 && physical_page_alloc(free_page, pid) == 0) {
+		if (free_page != 0 && physical_page_alloc(free_page, pid) == 0) {
                 	memcpy((uintptr_t *)free_page, (uintptr_t *)PAGEADDRESS(virtual_address_mapping.pn), PAGESIZE);
                 	virtual_memory_map(processes[pid].p_pagetable, virtual_addr, free_page, PAGESIZE, PTE_P | PTE_W | PTE_U);
             }
 	}
 
     }
+    processes[pid].p_registers = current->p_registers;
     processes[pid].p_registers.reg_eax = 0;
     processes[pid].p_state = P_RUNNABLE;
-    processes[pid].p_registers = current->p_registers;
     
     return pid;
 }
