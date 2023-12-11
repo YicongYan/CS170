@@ -119,9 +119,9 @@ void kernel(const char* command) {
     //    and we repeat it in this hint.
 
 
-    //kernel permission
+    //add kernel permission
     virtual_memory_map(kernel_pagetable, 0, 0, PROC_START_ADDR, PTE_P | PTE_W);
-    //apps permission
+    //add apps permission
     virtual_memory_map(kernel_pagetable, (uintptr_t)console, (uintptr_t)console, PAGESIZE, PTE_P | PTE_W | PTE_U);
 
     if (command && strcmp(command, "fork") == 0)
@@ -184,17 +184,23 @@ void process_setup(pid_t pid, int program_number) {
     process_init(&processes[pid], 0);
 
     // Exercise 2: your code here
+    //copy table
     processes[pid].p_pagetable = copy_pagetable(kernel_pagetable, pid);
+    //set permission
     virtual_memory_map(processes[pid].p_pagetable, PROC_START_ADDR, PROC_START_ADDR, MEMSIZE_PHYSICAL - PROC_START_ADDR, PTE_W | PTE_U);
-
+    
+    //load and validation
     int r = program_load(&processes[pid], program_number);
     assert(r >= 0);
 
     // Exercise 4: your code here
+   //set esp
     processes[pid].p_registers.reg_esp = MEMSIZE_VIRTUAL;
     uintptr_t stack_page = processes[pid].p_registers.reg_esp - PAGESIZE;
+    //find free page
     uintptr_t free_page = find_free_page();
-
+    
+    //if sucessfully allocate then set permission
     if (free_page != -1 && physical_page_alloc(free_page, pid) == 0){
 	    virtual_memory_map(processes[pid].p_pagetable, stack_page, free_page,
 	                       PAGESIZE, PTE_P|PTE_W|PTE_U);
@@ -286,21 +292,23 @@ void exception(x86_registers* reg) {
 
         // Exercise 3: your code here
         int r = -1;
+	//find free page address
 	uintptr_t free_page = find_free_page();
-
+	//if find free page r = 1
 	if (free_page != 0 && physical_page_alloc(free_page, current->p_pid) == 0) {
             r = 1;
         }
-
+	
+	//set permission after successfully find a free page to allocate
        if (r == 1) {
             virtual_memory_map(current->p_pagetable, addr, free_page,
                                PAGESIZE, PTE_P|PTE_W|PTE_U);
         }
-
+	//if there's not enough memory
 	else {
             debug_printf("%s", "Out of physical memory!");
         }
-
+	//return result
         current->p_registers.reg_eax = r;
         break;
     }
@@ -359,20 +367,21 @@ int fork(void) {
     processes[pid].p_pagetable = copy_pagetable(current->p_pagetable, pid);
      
     uintptr_t virtual_addr;
-
+    //traverse the memeory
     for (virtual_addr = PROC_START_ADDR; virtual_addr <= MEMSIZE_VIRTUAL; virtual_addr += PAGESIZE) {
 	
 	//maybe doesn't need this one
-	if (virtual_addr == (uintptr_t)console) {
+	if ((uintptr_t)console ==  virtual_addr) 
             continue;
-        }
         
+        //find virtual addresss and map
   	vamapping virtual_address_mapping = virtual_memory_lookup(processes[pid].p_pagetable, virtual_addr);
 	
+	//if writable and permission found
 	if (virtual_address_mapping.perm & PTE_W) {
 		 uintptr_t free_page = find_free_page();
 
-		//maybe doesn't need this if statement
+		//maybe doesn't need this if statement, but this means find a free page and allocate 
 		if (free_page != 0 && physical_page_alloc(free_page, pid) == 0) {
                 	memcpy((uintptr_t *)free_page, (uintptr_t *)PAGEADDRESS(virtual_address_mapping.pn), PAGESIZE);
                 	virtual_memory_map(processes[pid].p_pagetable, virtual_addr, free_page, PAGESIZE, PTE_P | PTE_W | PTE_U);
@@ -380,6 +389,7 @@ int fork(void) {
 	}
 
     }
+    //ser registers
     processes[pid].p_registers = current->p_registers;
     processes[pid].p_registers.reg_eax = 0;
     processes[pid].p_state = P_RUNNABLE;
