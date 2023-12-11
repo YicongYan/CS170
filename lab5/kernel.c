@@ -368,24 +368,25 @@ int fork(void) {
      
     uintptr_t virtual_addr;
     //traverse the memeory
-    for (virtual_addr = PROC_START_ADDR; virtual_addr <= MEMSIZE_VIRTUAL; virtual_addr += PAGESIZE) {
-	
-	//maybe doesn't need this one
-	if ((uintptr_t)console ==  virtual_addr) 
-            continue;
-        
-        //find virtual addresss and map
-  	vamapping virtual_address_mapping = virtual_memory_lookup(processes[pid].p_pagetable, virtual_addr);
-	
-	//if writable and permission found
-	if (virtual_address_mapping.perm & PTE_W) {
-		 uintptr_t free_page = find_free_page();
+    for (virtual_addr = PROC_START_ADDR; virtual_addr <= MEMSIZE_VIRTUAL; virtual_addr = virtual_addr + PAGESIZE) {
 
-		//maybe doesn't need this if statement, but this means find a free page and allocate 
-		if (free_page != 0 && physical_page_alloc(free_page, pid) == 0) {
-                	memcpy((uintptr_t *)free_page, (uintptr_t *)PAGEADDRESS(virtual_address_mapping.pn), PAGESIZE);
-                	virtual_memory_map(processes[pid].p_pagetable, virtual_addr, free_page, PAGESIZE, PTE_P | PTE_W | PTE_U);
-            }
+        if ((uintptr_t)console !=  virtual_addr){
+	        //find virtual addresss and map
+	  	vamapping virtual_address_mapping = virtual_memory_lookup(processes[pid].p_pagetable, virtual_addr);
+		
+		//if writable and permission found
+		if (virtual_address_mapping.perm & PTE_W) {
+			 uintptr_t free_page = find_free_page();
+	
+			//maybe doesn't need this if statement, but this means find a free page and allocate 
+			if (free_page != -1) {
+				physical_page_alloc(free_page, pid);
+				//copy pages
+	                	memcpy((uintptr_t *)free_page, (uintptr_t *)PAGEADDRESS(virtual_address_mapping.pn), PAGESIZE);
+				//set permission
+	                	virtual_memory_map(processes[pid].p_pagetable, virtual_addr, free_page, PAGESIZE, PTE_P | PTE_W | PTE_U);
+	            }
+		}
 	}
 
     }
